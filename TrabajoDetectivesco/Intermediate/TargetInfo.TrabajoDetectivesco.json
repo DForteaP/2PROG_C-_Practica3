@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "TrabajoDetectivesco",
+			"Path": "..\\Source\\TrabajoDetectivesco.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "TrabajoDetectivescoEditor",
+			"Path": "..\\Source\\TrabajoDetectivescoEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}
