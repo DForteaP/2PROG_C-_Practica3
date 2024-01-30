@@ -6,19 +6,18 @@
 #include "Components/ActorComponent.h"
 #include "Tweenable.generated.h"
 
+class UTweener;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PRACTICA3_API UTweenable : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:
-	UTweenable();
-
 	TObjectPtr<UTweener> ActiveTweener;
-
 	float Time = 1.f;
 
+public:
+	
 	UFUNCTION(BlueprintCallable)
 	UTweener* Start(const FVector& Destiny, float Time);
 

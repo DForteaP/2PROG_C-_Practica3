@@ -3,24 +3,34 @@
 
 #include "AInspectable.h"
 
+#include "Inspectable.h"
+#include "Practica3/Actors/Tweener/Tweenable.h"
+
 
 // Sets default values
 AAInspectable::AAInspectable()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	
 	PrimaryActorTick.bCanEverTick = true;
-}
 
-// Called when the game starts or when spawned
-void AAInspectable::BeginPlay()
-{
-	Super::BeginPlay();
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	MeshComponent->SetupAttachment(RootComponent);	
+
+	
+#if WITH_EDITOR
+	
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshFinder(TEXT("/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone"));
+	
+	if(StaticMeshFinder.Succeeded()) MeshComponent->SetStaticMesh(StaticMeshFinder.Object);
+	
+#endif
+
+	Inspectable = CreateDefaultSubobject<UInspectable>(TEXT("Inspectable"));
+
+	Tweenable = CreateDefaultSubobject<UTweenable>(TEXT("Tweenable"));
 	
 }
 
-// Called every frame
-void AAInspectable::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
+
 

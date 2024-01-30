@@ -21,7 +21,8 @@ class PRACTICA3_API UTweener : public UObject
 
 	float ElapsedTime;	
 	float Time;
-	
+
+public:
 	void Start(AActor* Actor, const float Time, const FVector& InTo);
 	void Interp();
 	

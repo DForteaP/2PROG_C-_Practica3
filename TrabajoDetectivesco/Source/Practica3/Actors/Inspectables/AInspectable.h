@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "AInspectable.generated.h"
 
+class UTweenable;
+class UInspectable;
+
 UCLASS()
 class PRACTICA3_API AAInspectable : public AActor
 {
@@ -18,8 +21,8 @@ public:
 	UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = true));
-	UInspectableComponent* InspectableComponent;
+	UInspectable* Inspectable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = true));
-	UTweeningComponent* TweeningComponent;
+	UTweenable* Tweenable;
 };

@@ -13,6 +13,7 @@ class USceneComponent;
 class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
+class AAInspectable;
 
 UCLASS(config=Game)
 class APractica3Character : public ACharacter
@@ -39,9 +40,26 @@ class APractica3Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
 
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* InteractAction;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interact, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* Zona;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* Inspeccionar;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* GirarObjeto;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
+	class UInputMappingContext* InspectMC;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
+	bool IsInspecting = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Interact, meta = (AllowPrivateAccess = "true"))
+	AAInspectable* Inspectable;
+	
 	
 public:
 	APractica3Character();
@@ -73,9 +91,14 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	
+	void ThrowInspectMode();
+	void RemoveInspectMode();
 
-	/** Called for interact input */
-	void Interact(const FInputActionValue& Value);
+	void InspectActor();
+	void LookItem(const FInputActionValue& Value);
+	
+	void AddMappingContext(const UInputMappingContext* InOldMappingContext, const UInputMappingContext* InNewMappingContext) const;
 
 protected:
 	// APawn interface

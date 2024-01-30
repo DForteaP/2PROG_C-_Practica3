@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "Inspectable.generated.h"
 
+struct FInputActionValue;
+class APractica3Character;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PRACTICA3_API UInspectable : public UActorComponent

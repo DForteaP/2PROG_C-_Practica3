@@ -7,6 +7,8 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Actors/Inspectables/AInspectable.h"
+#include "Actors/Inspectables/Inspectable.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -34,7 +36,11 @@ APractica3Character::APractica3Character()
 	Mesh1P->CastShadow = false;
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-	
+
+
+	Zona = CreateDefaultSubobject<USceneComponent>(TEXT("Zona"));
+	Zona->SetRelativeLocation({90.f,0.f,60.f});
+
 }
 
 void APractica3Character::BeginPlay()
@@ -71,13 +77,25 @@ void APractica3Character::SetupPlayerInputComponent(class UInputComponent* Playe
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APractica3Character::Look);
 
 		//Interact
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &APractica3Character::Interact);
+		EnhancedInputComponent->BindAction(Inspeccionar, ETriggerEvent::Started, this, &APractica3Character::InspectActor);
+
+		//Inspect
+		EnhancedInputComponent->BindAction(GirarObjeto, ETriggerEvent::Triggered, this, &APractica3Character::LookItem);
 	}
 }
 
-void APractica3Character::Interact(const FInputActionValue& Value)
+
+void APractica3Character::AddMappingContext(const UInputMappingContext* InOldMappingContext, const UInputMappingContext* InNewMappingContext) const
 {
-	
+	//Add Input Mapping Context
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->RemoveMappingContext(InOldMappingContext);
+			Subsystem->AddMappingContext(InNewMappingContext, 0);
+		}
+	}
 }
 
 void APractica3Character::Move(const FInputActionValue& Value)
@@ -114,4 +132,80 @@ void APractica3Character::SetHasRifle(bool bNewHasRifle)
 bool APractica3Character::GetHasRifle()
 {
 	return bHasRifle;
+}
+
+
+void APractica3Character::ThrowInspectMode()
+{
+	FHitResult OutHit;
+
+	float RadiusSphere = 50.f;
+		
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(RadiusSphere);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.bTraceComplex = true;
+					
+	GetWorld()->SweepSingleByChannel(
+		OutHit,
+		this->GetActorLocation(),
+		this->GetActorLocation() + this->GetActorForwardVector() * 100.f,
+		FQuat::Identity,
+		ECC_Visibility,
+		CollisionShape,
+		QueryParams
+	);
+		
+#if WITH_EDITOR
+	DrawDebugSphere(GetWorld(),
+					this->GetActorLocation(),
+					RadiusSphere,
+					100,
+					FColor::Blue,
+					false,
+					5.f
+	);
+#endif
+
+	if (OutHit.IsValidBlockingHit())
+	{
+		if(UInspectable* InspectableActor = OutHit.GetActor()->FindComponentByClass<UInspectable>())
+		{
+			InspectableActor->AttachActor(this);
+			IsInspecting = true;
+			
+			if(UInspectable* Insp = Cast<UInspectable>(OutHit.GetActor())) InspectableActor = Insp;
+			
+			AddMappingContext(DefaultMappingContext, InspectMC);
+		}
+	}
+}
+
+void APractica3Character::RemoveInspectMode()
+{
+	AddMappingContext(InspectMC, DefaultMappingContext);
+	IsInspecting = false;
+}
+
+void APractica3Character::InspectActor()
+{
+	if(!IsInspecting)
+	{	
+		ThrowInspectMode();
+	}else
+	{
+		RemoveInspectMode();
+	}
+}
+
+void APractica3Character::LookItem(const FInputActionValue& Value)
+{
+	const FVector LookAxisVector = Value.Get<FVector>();
+
+	if(UInspectable* InspectableComponent = Inspectable->FindComponentByClass<UInspectable>())
+	{
+		InspectableComponent->Inspeccionar(LookAxisVector);
+	}
 }

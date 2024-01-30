@@ -3,33 +3,41 @@
 
 #include "Inspectable.h"
 
+#include "Practica3/Practica3Character.h"
+#include "Practica3/Actors/Inspectables/AInspectable.h"
+#include "Practica3/Actors/Tweener/Tweenable.h"
+
 
 // Sets default values for this component's properties
 UInspectable::UInspectable()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
-// Called when the game starts
-void UInspectable::BeginPlay()
+void UInspectable::AttachActor(const APractica3Character* InCharacter) const
 {
-	Super::BeginPlay();
+	AAInspectable* Inspectable = Cast<AAInspectable>(GetOwner());
+	if(!Inspectable) return;
 
-	// ...
+	UTweenable* Tweenable = Inspectable->FindComponentByClass<UTweenable>();
+	if(!Tweenable) return;
 	
+	if(const USceneComponent* PointToInspect = InCharacter->FindComponentByClass<USceneComponent>()){
+		Tweenable->Start(PointToInspect->GetComponentLocation(), Tweenable->GetTime());
+	}	
 }
 
-
-// Called every frame
-void UInspectable::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UInspectable::Inspeccionar(const FInputActionValue& Value) const
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	const FVector RotateAxis = Value.Get<FVector>();
+	
+	if(AAInspectable* InspectableActor = Cast<AAInspectable>(GetOwner()))
+	{
+		InspectableActor->AddActorLocalRotation(
+			FQuat(FRotator(RotateAxis.Y,RotateAxis.Z,RotateAxis.X)),
+			false,
+			nullptr,
+			ETeleportType::None);
+	}
 }
-
