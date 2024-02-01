@@ -16,7 +16,7 @@ class PRACTICA3_API UInspectable : public UActorComponent
 
 public:
 	UInspectable();
-
-	void AttachActor(const APractica3Character* InCharacter) const;
+	void CenterOnActor(const APractica3Character* InCharacter) const;
+	void DescenterOnActor(const APractica3Character* InCharacter) const;
 	void Inspeccionar(const FInputActionValue& Value) const;
 };

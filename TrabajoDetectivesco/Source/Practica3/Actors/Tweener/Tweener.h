@@ -14,8 +14,10 @@ class PRACTICA3_API UTweener : public UObject
 {
 	GENERATED_BODY()
 
-	AActor* Owner;	
-	FVector Origin, Destiny;	
+	AActor* Owner;
+	FVector Origin;
+	FVector Destiny;
+	FVector OriginalPosition;
 	
 	FTimerHandle TimerHandle;
 
@@ -23,7 +25,8 @@ class PRACTICA3_API UTweener : public UObject
 	float Time;
 
 public:
-	void Start(AActor* Actor, const float Time, const FVector& InTo);
+	void Start(AActor* Actor, const float Time, const FVector& Destiny);
+	void Revert(AActor* Actor, const float Time, const FVector& OriginalPosition);
 	void Interp();
 	
 };

@@ -40,22 +40,27 @@ class APractica3Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
 
+	/** Look Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LookAction;
+
+
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interact, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Zona;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* Inspeccionar;
+	class UInputAction* InteractAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* GirarObjeto;
+	class UInputAction* RotateAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
-	class UInputMappingContext* InspectMC;
+	class UInputMappingContext* MC_Input;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Interact, meta=(AllowPrivateAccess = "true"))
-	bool IsInspecting = false;
+	bool ModoInspeccionar = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Interact, meta = (AllowPrivateAccess = "true"))
 	AAInspectable* Inspectable;
@@ -68,11 +73,7 @@ protected:
 	virtual void BeginPlay();
 
 public:
-		
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
-
+	
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
@@ -92,25 +93,20 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 	
-	void ThrowInspectMode();
-	void RemoveInspectMode();
+	void Inspeccionar();
+	void SalirModoInspeccionar();
 
-	void InspectActor();
-	void LookItem(const FInputActionValue& Value);
+	void Interact();
+	void Rotate(const FInputActionValue& Value);
 	
-	void AddMappingContext(const UInputMappingContext* InOldMappingContext, const UInputMappingContext* InNewMappingContext) const;
-
-protected:
+	void ChangeMappingContext(const UInputMappingContext* InOldMappingContext, const UInputMappingContext* InNewMappingContext) const;
+	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
 public:
-	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-
 };
 

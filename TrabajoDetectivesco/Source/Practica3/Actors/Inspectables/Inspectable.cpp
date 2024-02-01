@@ -8,36 +8,41 @@
 #include "Practica3/Actors/Tweener/Tweenable.h"
 
 
-// Sets default values for this component's properties
+AAInspectable* Inspectable;
+UTweenable* Tweenable;
+
+
+
 UInspectable::UInspectable()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
-void UInspectable::AttachActor(const APractica3Character* InCharacter) const
+void UInspectable::CenterOnActor(const APractica3Character* Character) const
 {
-	AAInspectable* Inspectable = Cast<AAInspectable>(GetOwner());
+	Inspectable = Cast<AAInspectable>(GetOwner());
 	if(!Inspectable) return;
 
-	UTweenable* Tweenable = Inspectable->FindComponentByClass<UTweenable>();
+	Tweenable = Inspectable->FindComponentByClass<UTweenable>();
 	if(!Tweenable) return;
 	
-	if(const USceneComponent* PointToInspect = InCharacter->FindComponentByClass<USceneComponent>()){
-		Tweenable->Start(PointToInspect->GetComponentLocation(), Tweenable->GetTime());
+	if(const USceneComponent* PointToInspect = Character->FindComponentByClass<USceneComponent>()){
+		Tweenable->Start(PointToInspect->GetComponentLocation() + Character->GetActorForwardVector() * 100, Tweenable->GetTime());
 	}	
+}
+
+void UInspectable::DescenterOnActor(const APractica3Character* Character) const
+{
+	if(const USceneComponent* PointToInspect = Character->FindComponentByClass<USceneComponent>()){
+		Tweenable->Revert(PointToInspect->GetComponentLocation() + Character->GetActorForwardVector() * 100, Tweenable->GetTime());
+	}
 }
 
 void UInspectable::Inspeccionar(const FInputActionValue& Value) const
 {
 	const FVector RotateAxis = Value.Get<FVector>();
-	
 	if(AAInspectable* InspectableActor = Cast<AAInspectable>(GetOwner()))
 	{
-		InspectableActor->AddActorLocalRotation(
-			FQuat(FRotator(RotateAxis.Y,RotateAxis.Z,RotateAxis.X)),
-			false,
-			nullptr,
-			ETeleportType::None);
+		InspectableActor->AddActorLocalRotation(FQuat(FRotator(RotateAxis.Y,RotateAxis.Z,RotateAxis.X)),false,nullptr,ETeleportType::None);
 	}
 }

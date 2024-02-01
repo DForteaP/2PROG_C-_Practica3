@@ -20,7 +20,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	UTweener* Start(const FVector& Destiny, float Time);
-
+	UFUNCTION(BlueprintCallable)
+	UTweener* Revert(const FVector& Destiny, float Time);
 	float GetTime() const {return Time;};
-	
 };

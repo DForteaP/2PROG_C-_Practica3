@@ -5,15 +5,23 @@
 #include "Tweener.h"
 
 
-UTweener* UTweenable::Start(const FVector& To, const float IntTime)
+
+UTweener* UTweenable::Start(const FVector& Destiny, const float TimeTotal)
 {
-	if(!ActiveTweener)
-	{
 		ActiveTweener = NewObject<UTweener>(this, UTweener::StaticClass());
 		if (ActiveTweener)
 		{
-			ActiveTweener->Start(GetOwner(), IntTime, To);
+			ActiveTweener->Start(GetOwner(), TimeTotal, Destiny);
 		}
+	return ActiveTweener;
+}
+
+
+UTweener* UTweenable::Revert(const FVector& Destiny, const float TimeTotal)
+{
+	if (ActiveTweener)
+	{
+		ActiveTweener->Revert(GetOwner(), TimeTotal, Destiny);
 	}
 	return ActiveTweener;
 }

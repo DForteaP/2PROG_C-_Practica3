@@ -7,12 +7,14 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+//INPECCIONABLE
 #include "Actors/Inspectables/AInspectable.h"
 #include "Actors/Inspectables/Inspectable.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 // APractica3Character
+
+
 
 APractica3Character::APractica3Character()
 {
@@ -37,9 +39,9 @@ APractica3Character::APractica3Character()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
-
+	//CREA SCENE COMPONENT 
 	Zona = CreateDefaultSubobject<USceneComponent>(TEXT("Zona"));
-	Zona->SetRelativeLocation({90.f,0.f,60.f});
+	Zona->SetRelativeLocation({100.f,0.f,90.f});
 
 }
 
@@ -77,15 +79,14 @@ void APractica3Character::SetupPlayerInputComponent(class UInputComponent* Playe
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APractica3Character::Look);
 
 		//Interact
-		EnhancedInputComponent->BindAction(Inspeccionar, ETriggerEvent::Started, this, &APractica3Character::InspectActor);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &APractica3Character::Interact);
 
-		//Inspect
-		EnhancedInputComponent->BindAction(GirarObjeto, ETriggerEvent::Triggered, this, &APractica3Character::LookItem);
+		//RotateItem
+		EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Triggered, this, &APractica3Character::Rotate);
 	}
 }
 
-
-void APractica3Character::AddMappingContext(const UInputMappingContext* InOldMappingContext, const UInputMappingContext* InNewMappingContext) const
+void APractica3Character::ChangeMappingContext(const UInputMappingContext* InOldMappingContext, const UInputMappingContext* InNewMappingContext) const
 {
 	//Add Input Mapping Context
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -105,7 +106,6 @@ void APractica3Character::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
@@ -134,78 +134,59 @@ bool APractica3Character::GetHasRifle()
 	return bHasRifle;
 }
 
-
-void APractica3Character::ThrowInspectMode()
+void APractica3Character::Interact()
 {
-	FHitResult OutHit;
+	if(!ModoInspeccionar)
+	{	
+		Inspeccionar();
+	}else{
+		SalirModoInspeccionar();
+	}
+}
 
-	float RadiusSphere = 50.f;
-		
-	FCollisionShape CollisionShape;
-	CollisionShape.SetSphere(RadiusSphere);
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.bTraceComplex = true;
-					
-	GetWorld()->SweepSingleByChannel(
-		OutHit,
-		this->GetActorLocation(),
-		this->GetActorLocation() + this->GetActorForwardVector() * 100.f,
-		FQuat::Identity,
-		ECC_Visibility,
-		CollisionShape,
-		QueryParams
-	);
-		
-#if WITH_EDITOR
-	DrawDebugSphere(GetWorld(),
-					this->GetActorLocation(),
-					RadiusSphere,
-					100,
-					FColor::Blue,
-					false,
-					5.f
-	);
-#endif
-
-	if (OutHit.IsValidBlockingHit())
+void APractica3Character::Rotate(const FInputActionValue& Value)
+{
+	const FVector LookAxisVector = Value.Get<FVector>();
+	if(Inspectable->FindComponentByClass<UInspectable>())
 	{
-		if(UInspectable* InspectableActor = OutHit.GetActor()->FindComponentByClass<UInspectable>())
+		Inspectable->FindComponentByClass<UInspectable>()->Inspeccionar(LookAxisVector);
+	}
+}
+
+
+FHitResult HIT;
+
+void APractica3Character::Inspeccionar()
+{
+	float Radio = 50.f;
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(Radio);
+
+	FCollisionQueryParams Params;
+	Params.bTraceComplex = true;
+
+	DrawDebugSphere(GetWorld(),this->GetActorLocation() + this->GetActorForwardVector() * 100.f,Radio,50,FColor::Red,false,2.f);
+	GetWorld()->SweepSingleByChannel(HIT,this->GetActorLocation(),this->GetActorLocation() + this->GetActorForwardVector() * 100.f,FQuat::Identity,ECC_Visibility,CollisionShape,Params);
+	
+	if (HIT.IsValidBlockingHit())
+	{
+		if(HIT.GetActor()->FindComponentByClass<UInspectable>())
 		{
-			InspectableActor->AttachActor(this);
-			IsInspecting = true;
-			
-			if(UInspectable* Insp = Cast<UInspectable>(OutHit.GetActor())) InspectableActor = Insp;
-			
-			AddMappingContext(DefaultMappingContext, InspectMC);
+			HIT.GetActor()->FindComponentByClass<UInspectable>()->CenterOnActor(this);
+			if(AAInspectable* Insp = Cast<AAInspectable>(HIT.GetActor())) Inspectable = Insp;
+			ChangeMappingContext(DefaultMappingContext, MC_Input);
+			ModoInspeccionar = !ModoInspeccionar;
 		}
 	}
 }
 
-void APractica3Character::RemoveInspectMode()
+void APractica3Character::SalirModoInspeccionar()
 {
-	AddMappingContext(InspectMC, DefaultMappingContext);
-	IsInspecting = false;
-}
-
-void APractica3Character::InspectActor()
-{
-	if(!IsInspecting)
-	{	
-		ThrowInspectMode();
-	}else
+	if(HIT.GetActor()->FindComponentByClass<UInspectable>())
 	{
-		RemoveInspectMode();
+		HIT.GetActor()->FindComponentByClass<UInspectable>()->DescenterOnActor(this);
+		ChangeMappingContext(MC_Input, DefaultMappingContext);
+		ModoInspeccionar = !ModoInspeccionar;
 	}
 }
 
-void APractica3Character::LookItem(const FInputActionValue& Value)
-{
-	const FVector LookAxisVector = Value.Get<FVector>();
-
-	if(UInspectable* InspectableComponent = Inspectable->FindComponentByClass<UInspectable>())
-	{
-		InspectableComponent->Inspeccionar(LookAxisVector);
-	}
-}
